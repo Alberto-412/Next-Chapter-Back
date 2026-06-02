@@ -1,0 +1,160 @@
+const pool = require("../config/conexion");
+
+// Filtrar libros 
+const selectAllLibros = async (filtros) => {
+
+    // Recibe los filtros enviados desde el controller mediante req.query
+    // Si el usuario busca "harry", la consulta devolverá todos los libros
+    // que contengan "harry" en el título, descripción, categoría, autor o editorial.
+
+    const { busqueda, categoria, precioMin, precioMax } = filtros;
+
+    // Aquí monto la consulta para traer todos los datos de los libros porque luego los necesito - Cry  (T_T)
+    let sql = `
+        SELECT 
+            p.id,
+            p.titulo,
+            p.descripcion,
+            p.isbn,
+            p.precio,
+            p.stock,
+            p.pre_reserva,
+            p.imagen,
+            p.fecha_publicacion,
+            e.nombre AS editorial,
+            GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias,
+            GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores
+        FROM productos p
+        LEFT JOIN editoriales e ON p.id_editorial = e.id
+        LEFT JOIN producto_categoria pc ON p.id = pc.id_producto
+        LEFT JOIN categorias c ON pc.id_categoria = c.id
+        LEFT JOIN producto_autor pa ON p.id = pa.id_producto
+        LEFT JOIN autores a ON pa.id_autor = a.id
+        WHERE 1 = 1
+    `;
+
+    // Array para meter los valores que sustituyen los ? de la consulta
+    const params = [];
+
+    // Filtro de búsqueda por título, descripción, categoría, autor o editorial
+    if (busqueda) {
+        sql += `
+            AND (
+                p.titulo LIKE ?
+                OR p.descripcion LIKE ?
+                OR c.nombre LIKE ?
+                OR a.nombre_autor LIKE ?
+                OR e.nombre LIKE ?
+            )
+        `;
+        // Añade el texto de búsqueda a cada uno de los ? del LIKE.
+        // Los símbolos % permiten buscar coincidencias parciales en título,
+        // descripción, categoría, autor y editorial.
+        params.push(
+            `%${busqueda}%`,
+            `%${busqueda}%`,
+            `%${busqueda}%`,
+            `%${busqueda}%`,
+            `%${busqueda}%`
+        );
+    }
+
+    // Filtro por categoría
+    if (categoria) {
+        sql += ` AND c.id = ?`;
+        params.push(categoria);
+    }
+
+    // Filtro por precio mínimo
+    if (precioMin) {
+        sql += ` AND p.precio >= ?`;
+        params.push(precioMin);
+    }
+
+    // Filtro por precio máximo
+    if (precioMax) {
+        sql += ` AND p.precio <= ?`;
+        params.push(precioMax);
+    }
+
+    // Agrupa aqui para que cada libro salga una sola vez
+    sql += `
+        GROUP BY 
+            p.id,
+            p.titulo,
+            p.descripcion,
+            p.isbn,
+            p.precio,
+            p.stock,
+            p.pre_reserva,
+            p.imagen,
+            p.fecha_publicacion,
+            e.nombre
+    `;
+
+    // Ejecuta la consulta SQL
+    const [result] = await pool.query(sql, params);
+
+    // Retorna los libros al controller
+    return result;
+};
+
+
+// Obtener un libro por id
+const selectLibroById = async (id) => {
+
+    const sql = `
+        SELECT
+            p.*,
+            e.nombre AS editorial
+        FROM productos p
+        LEFT JOIN editoriales e
+            ON p.id_editorial = e.id
+        WHERE p.id = ?
+    `;
+
+    const [result] = await pool.query(sql, [id]);
+
+    return result[0];
+};
+
+// Crear libro
+const insertLibro = async (libro) => {
+    const {
+        titulo,
+        descripcion,
+        isbn,
+        precio,
+        stock,
+        pre_reserva,
+        imagen,
+        fecha_publicacion,
+        id_editorial
+    } = libro;
+
+    const sql = `
+        INSERT INTO productos
+        (titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, id_editorial)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await pool.query(sql, [
+        titulo,
+        descripcion,
+        isbn,
+        precio,
+        stock,
+        pre_reserva,
+        imagen,
+        fecha_publicacion,
+        id_editorial
+    ]);
+
+    return result;
+};
+
+module.exports = {
+    selectAllLibros,
+    selectLibroById,
+    insertLibro
+};

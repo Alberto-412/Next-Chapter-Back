@@ -1,9 +1,5 @@
-const express = require('express');
-const router = express.Router();
+const router = require("express").Router()
 
-// Aquí iremos importando las rutas de cada módulo
+router.use("/", require("./api_routes/libros.routes"))
 
-
-
-
-module.exports = router;
+module.exports = router
