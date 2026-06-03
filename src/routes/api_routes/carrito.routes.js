@@ -10,13 +10,13 @@ const auth = require('../../middleware/auth')
 router.get('/', auth, carritoControl.getCarrito);
 
 // POST /api/carrito → RUTA para añadir un producto
-router.post('/', auth, carritoControl.addItem);
+router.post('/items', auth, carritoControl.addItem);
 
 // PUT /api/carrito/:id_producto → cambiar la cantidad de un producto
-router.put('/:id_producto', auth, carritoControl.updateCantidad);
+router.put('/items/:bookId', auth, carritoControl.updateCantidad);
 
 // DELETE /api/carrito/:id_producto → quitar un producto concreto
-router.delete('/:id_producto', auth, carritoControl.removeItem);
+router.delete('/items/:bookId', auth, carritoControl.removeItem);
 
 // DELETE /api/carrito → vaciar el carrito entero
 router.delete('/', auth, carritoControl.vaciarCarrito);

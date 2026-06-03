@@ -44,7 +44,7 @@ const addItem = async (req, res) => {
 // PUT /api/carrito/:id_producto → FUNCIÓN PARA CAMBIAR LA CANTIDAD 
 const updateCantidad = async (req, res) => {
   try {
-    const { id_producto } = req.params;
+    const { bookId:id_producto } = req.params;
     const { cantidad } = req.body;
 
     if (!cantidad || cantidad < 1) {
@@ -62,7 +62,7 @@ const updateCantidad = async (req, res) => {
 // DELETE /api/carrito/:id_producto → quitar un producto
 const removeItem = async (req, res) => {
   try {
-    const { id_producto } = req.params;
+    const { bookId: id_producto } = req.params;
     const id_carrito = await obtenerOCrearCarrito(req.user.id);
     await carritoModel.removeItem(id_carrito, id_producto);
     res.json({ mensaje: 'Producto eliminado del carrito' });
