@@ -77,8 +77,65 @@ const createLibro = async (req, res) => {
     }
 };
 
+
+// Editar un libro
+const updateById = async (req, res) => {
+
+    try {
+
+        // Recogemos el id que viene en la URL
+        // Usamos params porque el id viene en la URL.
+        // Lo necesitamos para identificar el libro que vamos a editar.
+        const { id } = req.params;
+
+        // Enviamos el id y los datos nuevos al modelo
+        const result = await LibrosModel.updateLibro(id, req.body);
+
+        res.json({
+            mensaje: "Libro actualizado correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Ha ocurrido un error al actualizar el libro"
+        });
+    }
+};
+
+// Borrar un libro
+const deleteById = async (req, res) => {
+
+    try {
+
+        // Sacamos el id de la URL  PARAMS dinamico
+        // Lo usamos para saber qué libro queremos borrar
+        const { id } = req.params;
+
+        const result = await LibrosModel.deleteLibro(id);
+
+        res.json({
+            mensaje: "Libro eliminado correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al eliminar el libro"
+        });
+    }
+};
+
 module.exports = {
     getAll,
     getById,
-    createLibro
+    createLibro,
+    updateById,
+    deleteById
 };

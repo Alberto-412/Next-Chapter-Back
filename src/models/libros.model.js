@@ -153,8 +153,75 @@ const insertLibro = async (libro) => {
     return result;
 };
 
+// Editar un libro de la base de datos
+// Necesitamos el id para saber qué libro actualizar
+// y el objeto libro para tener los nuevos datos
+const updateLibro = async (id, libro) => {
+
+    // Sacamos los datos que vienen desde el body
+    const {
+        titulo,
+        descripcion,
+        isbn,
+        precio,
+        stock,
+        pre_reserva,
+        imagen,
+        fecha_publicacion,
+        id_editorial
+    } = libro;
+
+    // Actualizamos los datos del libro que tenga ese id
+    const sql = `
+        UPDATE productos
+        SET
+            titulo = ?,
+            descripcion = ?,
+            isbn = ?,
+            precio = ?,
+            stock = ?,
+            pre_reserva = ?,
+            imagen = ?,
+            fecha_publicacion = ?,
+            id_editorial = ?
+        WHERE id = ?
+    `;
+
+    // Los ? se sustituyen por los valores de abajo
+    const [result] = await pool.query(sql, [
+        titulo,
+        descripcion,
+        isbn,
+        precio,
+        stock,
+        pre_reserva,
+        imagen,
+        fecha_publicacion,
+        id_editorial,
+        id
+    ]);
+
+    return result;
+};
+
+// Borrar un libro por su id
+const deleteLibro = async (id) => {
+
+    // Eliminamos el libro que tenga ese id
+    const sql = `
+        DELETE FROM productos
+        WHERE id = ?
+    `;
+
+    const [result] = await pool.query(sql, [id]);
+
+    return result;
+};
+
 module.exports = {
     selectAllLibros,
     selectLibroById,
-    insertLibro
+    insertLibro,
+    updateLibro,
+    deleteLibro
 };
