@@ -14,7 +14,7 @@ router.get("/libros/:id", librosControl.getById)
 // RUTAS PRIVADAS
 // //Crear libro
 
-//router.post("/libros", verifyToken, isAdmin, librosControl.createLibro)
+//router.post("/libros", !!!!!auth!!!!!, isAdmin, librosControl.createLibro)
 // Temporal para probar sin verifyToken ni IsAdmin
 router.post("/libros", librosControl.createLibro)
 
