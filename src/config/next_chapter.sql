@@ -108,6 +108,15 @@ id_usuario      int unsigned not null,
         on update cascade on delete cascade
 );
 
+CREATE TABLE favoritos (
+    id int unsigned not null auto_increment primary key,
+    usuario_id int unsigned not null,
+    libro_id int unsigned not null,
+    created_at timestamp default current_timestamp,
+    constraint fk_favoritos_usuario foreign key (usuario_id) references usuarios (id) on delete cascade,
+    constraint fk_favoritos_producto foreign key (libro_id) references productos (id) on delete cascade
+);
+
 -- Producto ↔ Autor
 CREATE TABLE producto_autor ( -- tabla de relación N:M entre productos y autores
     id_producto int unsigned not null, -- ID del producto, positivo y obligatorio
