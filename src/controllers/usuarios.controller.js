@@ -1,6 +1,7 @@
-const bcript = require('bcrypt');
+const bcrypt = require('bcrypt');
 const usuariosModel = require('../models/usuarios.model');
-const { checkToken } = require('../../middleware/auth')
+const { checkToken, tokenBlacklist } = require('../middleware/auth');
+const { generateToken } = require('../utils/jwt');
 // ---------------------------------- //
 //                                    //
 // ---------------------------------- //
@@ -12,7 +13,7 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'El correo ya está registrado' })
         }
         //Encriptamos la contraseña
-        const passHashed = bcript.hashSync(contraseña, 10)
+        const passHashed = bcrypt.hashSync(contraseña, 10)
 
         //Hacemos el insert en la BD
         const result = await usuariosModel.addUser(nombre, mail, passHashed)
@@ -40,16 +41,20 @@ const login = async (req, res) => {
         console.log(selectedUser[0])
 
         // 3. Validamos que la contraseña sea correcta
-        const validPassword = bcript.compareSync(userBody.contraseña, selectedUser[0].contraseña)
+        const validPassword = bcrypt.compareSync(userBody.contraseña, selectedUser[0].contraseña)
 
         if (!validPassword) {
             return res.status(400).json({ message: 'Contraseña incorrecta' })
         }
-        // Creamos los datos a enviar al token
-        const dataToken = selectedUser[0]
+        // Creamos los datos a enviar al token (sin la contraseña)
+        const dataToken = {
+            id: selectedUser[0].id,
+            mail: selectedUser[0].mail,
+            rol: selectedUser[0].rol
+        }
 
         // 4. Creamos un token con los datos del usuario(jsonwebtoken)
-        const token = createToken(dataToken)
+        const token = generateToken(dataToken)
 
         // 5. Enviamos el token al front
         return res.status(200).json({ msj: "Login exitoso", token: token })
@@ -60,25 +65,126 @@ const login = async (req, res) => {
     }
 }
 
-const logout = async (req, res) => { }
+const logout = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1]
 
-const getMe = async (req, res) => { }
+        if (!token) {
+            return res.status(400).json({ message: 'No se proporcionó token' })
+        }
+
+        tokenBlacklist.add(token)
+
+        return res.status(200).json({ msj: "Logout exitoso" })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
+
+const getMe = async (req, res) => {
+    try {
+        // 1. Obtenemos el id del usuario del token
+        const id = req.user.id
+
+        // 2. Consultamos el perfil en la BD
+        const result = await usuariosModel.getProfile(id)
+
+        if (!result) {
+            return res.status(404).json({ message: 'Usuario no encontrado' })
+        }
+
+        // 3. Enviamos respuesta al front
+        return res.status(200).json(result)
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
 // ---------------------------------- //
 //                                    //
 // ---------------------------------- //
-const getProfile = async (req, res) => { }
+const getProfile = async (req, res) => {
+    try {
+        // 1. Obtenemos el id del usuario del token
+        const id = req.user.id
 
-const updateProfile = async (req, res) => { }
+        // 2. Consultamos el perfil en la BD
+        const result = await usuariosModel.getProfile(id)
 
-const updatePassword = async (req, res) => { }
+        if (!result) {
+            return res.status(404).json({ message: 'Usuario no encontrado' })
+        }
 
-const deleteProfile = async (req, res) => { }
+        // 3. Enviamos respuesta al front
+        return res.status(200).json(result)
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
+
+const updateProfile = async (req, res) => {
+    try {
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
+
+const updatePassword = async (req, res) => {
+    try {
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
+
+const deleteProfile = async (req, res) => {
+
+    try {
+        // 1. Obtenemos el id del usuario del token
+        const id = req.user.id
+
+        // 2. Eliminamos el usuario de la BD
+        const result = await usuariosModel.deleteUser(id)
+
+        if (!result) {
+            return res.status(404).json({ message: 'Usuario no encontrado' })
+        }
+
+        // 3. Enviamos respuesta al front
+        return res.status(200).json({ msj: "Usuario eliminado correctamente" })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+
+}
 // ---------------------------------- //
 //                                    //
 // ---------------------------------- //
-const getAddress = async (req, res) => { }
+const getAddress = async (req, res) => {
+    try {
 
-const addAddress = async (req, res) => { }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
+
+const addAddress = async (req, res) => {
+    try {
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error)
+    }
+}
 
 const updateAddress = async (req, res) => { }
 
