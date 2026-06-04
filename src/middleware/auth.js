@@ -2,7 +2,7 @@ const { verifyToken } = require('../utils/jwt');
 
 const tokenBlacklist = new Set()
 
-const checkToken = (req, res, next) => {
+const auth = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
@@ -23,4 +23,4 @@ const checkToken = (req, res, next) => {
   }
 };
 
-module.exports = { checkToken }
+module.exports = auth
