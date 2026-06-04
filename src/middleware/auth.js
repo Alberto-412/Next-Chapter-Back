@@ -23,4 +23,4 @@ const checkToken = (req, res, next) => {
   }
 };
 
-module.exports = { checkToken, tokenBlacklist }
+module.exports = { checkToken }
