@@ -218,10 +218,97 @@ const deleteLibro = async (id) => {
     return result;
 };
 
+
+// Buscar todos los autores que están relacionados con un libro/producto.
+// Para ello se utiliza la tabla `producto_autor`, que es la encargada
+// de guardar las relaciones entre productos y autores.
+//
+// Se hace un INNER JOIN entre la tabla `autores` y `producto_autor`
+// para obtener la información completa de cada autor asociado al
+// producto que se recibe como parámetro.
+//
+// La consulta devuelve el id, el nombre y la biografía de cada autor
+// vinculado al producto indicado mediante `id_producto`.
+const sql = `
+    SELECT
+        a.id,
+        a.nombre_autor,
+        a.biografia
+    FROM autores a
+    INNER JOIN producto_autor pa
+        ON a.id = pa.id_autor
+    WHERE pa.id_producto = ?
+`;
+const selectAutoresByLibro = async (id) => {
+
+    // Buscar todos los autores relacionados con ese libro
+    const sql = `
+        SELECT
+            a.id,
+            a.nombre_autor,
+            a.biografia
+        FROM autores a
+        INNER JOIN producto_autor pa
+            ON a.id = pa.id_autor
+        WHERE pa.id_producto = ?
+    `;
+
+    // Ejecutar consulta
+    const [result] = await pool.query(sql, [id]);
+
+
+    return result;
+};
+
+
+// INSERTAR un autor en un libro
+const insertAutorLibro = async (idLibro, idAutor) => {
+
+    // Guardar la relación en la tabla producto_autor
+    const sql = `
+        INSERT INTO producto_autor
+        (id_producto, id_autor)
+        VALUES (?, ?)
+    `;
+
+
+    const [result] = await pool.query(sql, [
+        idLibro,
+        idAutor
+    ]);
+
+
+    return result;
+};
+
+// Quitar un autor de un libro
+const deleteAutorLibro = async (idLibro, autorId) => {
+
+    // Borrar la relación entre ese libro y ese autor
+    const sql = `
+        DELETE FROM producto_autor
+        WHERE id_producto = ?
+        AND id_autor = ?
+    `;
+
+    // Pasar el id del libro y el id del autor
+    const [result] = await pool.query(sql, [
+        idLibro,
+        autorId
+    ]);
+
+
+    return result;
+};
+
+
 module.exports = {
     selectAllLibros,
     selectLibroById,
     insertLibro,
     updateLibro,
-    deleteLibro
+    deleteLibro,
+    selectAutoresByLibro,
+    insertAutorLibro,
+    deleteAutorLibro
 };

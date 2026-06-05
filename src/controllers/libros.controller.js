@@ -132,10 +132,108 @@ const deleteById = async (req, res) => {
     }
 };
 
+
+// Obtener los autores de un libro
+const getAutoresByLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Buscar los autores de ese libro
+        const autores = await LibrosModel.selectAutoresByLibro(id);
+
+
+        res.json({
+            mensaje: "Autores encontrados",
+            data: autores
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+
+        res.status(500).json({
+            mensaje: "Error al obtener los autores del libro"
+        });
+    }
+};
+
+
+// Añadir un autor a un libro
+const addAutorToLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Obtener el id del autor desde el body
+        const { id_autor } = req.body;
+
+        // Crear la relación libro-autor
+        const result = await LibrosModel.insertAutorLibro(
+            id,
+            id_autor
+        );
+
+
+        res.status(201).json({
+            mensaje: "Autor añadido al libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+
+        res.status(500).json({
+            mensaje: "Error al añadir el autor al libro"
+        });
+    }
+};
+
+
+// Quitar un autor de un libro
+const removeAutorFromLibro = async (req, res) => {
+
+    try {
+
+        // El id es del libro
+        const { id } = req.params;
+
+        // autorId es el autor que quiero quitar
+        const { autorId } = req.params;
+
+        // Borrar la relación libro-autor
+        const result = await LibrosModel.deleteAutorLibro(id, autorId);
+
+        res.json({
+            mensaje: "Autor quitado del libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+
+        res.status(500).json({
+            mensaje: "Error al quitar el autor del libro"
+        });
+    }
+};
+
 module.exports = {
     getAll,
     getById,
     createLibro,
     updateById,
-    deleteById
+    deleteById,
+    getAutoresByLibro,
+    addAutorToLibro,
+    removeAutorFromLibro
 };
