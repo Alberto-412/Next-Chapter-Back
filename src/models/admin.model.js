@@ -118,18 +118,38 @@ const getOrders = async () => {
 
 const getOrderById = async (id) => {
     const select = `
-        SELECT p.*, u.nombre AS cliente, u.mail, u.telefono,
+        SELECT p.id, p.total, p.estado, p.fecha_pedido, p.direccion_envio, p.metodo_pago,
+               u.nombre AS cliente, u.mail, u.telefono,
                pp.cantidad, pp.precio_unidad,
-               pr.id AS producto_id, pr.titulo, pr.imagen
+               pr.id AS id_producto, pr.titulo, pr.imagen
         FROM pedidos p
         JOIN usuarios u ON p.id_usuario = u.id
         JOIN pedido_producto pp ON p.id = pp.id_pedido
         JOIN productos pr ON pp.id_producto = pr.id
         WHERE p.id = ?
     `
-    const [result] = await pool.query(select, [id])
-    if (result.length === 0) return false
-    return result
+    const [rows] = await pool.query(select, [id])
+    if (rows.length === 0) return false
+
+    const pedido = {
+        id: rows[0].id,
+        total: rows[0].total,
+        estado: rows[0].estado,
+        fecha_pedido: rows[0].fecha_pedido,
+        direccion_envio: rows[0].direccion_envio,
+        metodo_pago: rows[0].metodo_pago,
+        cliente: rows[0].cliente,
+        mail: rows[0].mail,
+        telefono: rows[0].telefono,
+        productos: rows.map(row => ({
+            id_producto: row.id_producto,
+            titulo: row.titulo,
+            imagen: row.imagen,
+            cantidad: row.cantidad,
+            precio_unidad: row.precio_unidad
+        }))
+    }
+    return pedido
 }
 
 const updateOrderStatus = async (id, estado) => {
