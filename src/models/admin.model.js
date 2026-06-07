@@ -192,17 +192,34 @@ const checkUserActivePedidos = async (id) => {
 
 const getDashboard = async () => {
     const selectPedidos = `
-        SELECT p.*, u.nombre AS cliente, u.mail
+        SELECT p.id, p.total, p.estado, p.fecha_pedido, p.direccion_envio, p.metodo_pago,
+               u.nombre AS cliente, u.mail
         FROM pedidos p
         JOIN usuarios u ON p.id_usuario = u.id
         ORDER BY p.fecha_pedido DESC
+        LIMIT 10
     `
     const selectPendientes = "SELECT id, nombre, mail, fecha_registro FROM usuarios WHERE validado = 0"
 
+    const selectStats = `
+        SELECT 
+            COUNT(*) AS total_pedidos,
+            SUM(CASE WHEN estado = 'entregado' THEN 1 ELSE 0 END) AS entregados,
+            SUM(CASE WHEN estado IN ('procesando', 'enviado') THEN 1 ELSE 0 END) AS en_proceso,
+            SUM(CASE WHEN estado = 'cancelado' THEN 1 ELSE 0 END) AS cancelados,
+            SUM(CASE WHEN estado != 'cancelado' THEN total ELSE 0 END) AS ingresos_totales
+        FROM pedidos
+    `
+
     const [pedidos] = await pool.query(selectPedidos)
     const [pendientes] = await pool.query(selectPendientes)
+    const [statsRows] = await pool.query(selectStats)
 
-    return { pedidos, usuariosPendientes: pendientes }
+    return {
+        pedidos,
+        usuariosPendientes: pendientes,
+        stats: statsRows[0]
+    }
 }
 
 module.exports = { validarUsuario, getUsuariosPendientes, updateRol, getUsuarioById, getProducts, getProductById, createProduct, updateProduct, checkProductInPedidos, deleteProduct, getOrders, getOrderById, updateOrderStatus, getUsers, updateUser, deleteUser, checkUserActivePedidos, getDashboard }
