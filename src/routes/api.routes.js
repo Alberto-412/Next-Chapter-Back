@@ -17,4 +17,6 @@ router.use("/", require("./api_routes/editorial.routes"))
 router.use("/", require('./api_routes/usuarios.routes'));
 router.use("/", require('./api_routes/admin.routes'));
 
+router.use("/", require("./api_routes/resenas.routes"));
+
 module.exports = router;

@@ -227,13 +227,111 @@ const removeAutorFromLibro = async (req, res) => {
     }
 };
 
+
+// Obtener las categorías de un libro
+const getCategoriasByLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Buscar las categorías relacionadas con ese libro
+        const categorias = await LibrosModel.selectCategoriasByLibro(id);
+
+        res.json({
+            mensaje: "Categorías encontradas",
+            data: categorias
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al obtener las categorías del libro"
+        });
+    }
+};
+
+
+// Añadir una categoría a un libro
+const addCategoriaToLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Obtener el id de la categoría desde el body
+        const { id_categoria } = req.body;
+
+        // Crear la relación libro-categoría
+        const result = await LibrosModel.insertCategoriaLibro(
+            id,
+            id_categoria
+        );
+
+        res.status(201).json({
+            mensaje: "Categoría añadida al libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al añadir la categoría al libro"
+        });
+    }
+};
+
+
+// Quitar una categoría de un libro
+const removeCategoriaFromLibro = async (req, res) => {
+
+    try {
+
+        // El id es del libro
+        const { id } = req.params;
+
+        // categoriaId es la categoría que queremos quitar
+        const { categoriaId } = req.params;
+
+        // Borrar la relación libro-categoría
+        const result = await LibrosModel.deleteCategoriaLibro(
+            id,
+            categoriaId
+        );
+
+        res.json({
+            mensaje: "Categoría quitada del libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al quitar la categoría del libro"
+        });
+    }
+};
+
 module.exports = {
     getAll,
     getById,
     createLibro,
     updateById,
     deleteById,
+
     getAutoresByLibro,
     addAutorToLibro,
-    removeAutorFromLibro
+    removeAutorFromLibro,
+
+    getCategoriasByLibro,
+    addCategoriaToLibro,
+    removeCategoriaFromLibro
 };

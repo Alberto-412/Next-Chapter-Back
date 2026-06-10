@@ -11,26 +11,31 @@ const selectAllLibros = async (filtros) => {
 
     // Aquí monto la consulta para traer todos los datos de los libros porque luego los necesito - Cry  (T_T)
     let sql = `
-        SELECT 
-            p.id,
-            p.titulo,
-            p.descripcion,
-            p.isbn,
-            p.precio,
-            p.stock,
-            p.pre_reserva,
-            p.imagen,
-            p.fecha_publicacion,
-            e.nombre AS editorial,
-            GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias,
-            GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores
-        FROM productos p
-        LEFT JOIN editoriales e ON p.id_editorial = e.id
-        LEFT JOIN producto_categoria pc ON p.id = pc.id_producto
-        LEFT JOIN categorias c ON pc.id_categoria = c.id
-        LEFT JOIN producto_autor pa ON p.id = pa.id_producto
-        LEFT JOIN autores a ON pa.id_autor = a.id
-        WHERE 1 = 1
+        SELECT
+        p.id,
+        p.titulo,
+        p.descripcion,
+        p.isbn,
+        p.precio,
+        p.stock,
+        p.pre_reserva,
+        p.imagen,
+        p.fecha_publicacion,
+        e.nombre AS editorial,
+        GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias,
+        GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores,
+
+        ROUND(AVG(r.calificacion), 1) AS rating,
+        COUNT(DISTINCT r.id) AS total_resenas
+
+    FROM productos p
+    LEFT JOIN editoriales e ON p.id_editorial = e.id
+    LEFT JOIN producto_categoria pc ON p.id = pc.id_producto
+    LEFT JOIN categorias c ON pc.id_categoria = c.id
+    LEFT JOIN producto_autor pa ON p.id = pa.id_producto
+    LEFT JOIN autores a ON pa.id_autor = a.id
+    LEFT JOIN resenas r ON p.id = r.id_producto
+    WHERE 1 = 1
     `;
 
     // Array para meter los valores que sustituyen los ? de la consulta
@@ -100,20 +105,75 @@ const selectAllLibros = async (filtros) => {
 };
 
 
-// Obtener un libro por id
+// Obtener un libro por id con editorial, autores y categorías
 const selectLibroById = async (id) => {
 
+    /**
+     * Esta consulta se usa para la página de detalle del libro.
+     *
+     * Trae:
+     * - Datos del producto
+     * - Editorial
+     * - Autores relacionados
+     * - Categorías relacionadas
+     *
+     * GROUP_CONCAT permite juntar varios autores o categorías
+     * en un solo campo de texto.
+     */
     const sql = `
         SELECT
-            p.*,
-            e.nombre AS editorial
+            p.id,
+            p.titulo,
+            p.descripcion,
+            p.isbn,
+            p.precio,
+            p.stock,
+            p.pre_reserva,
+            p.imagen,
+            p.fecha_publicacion,
+            p.id_editorial,
+
+            e.nombre AS editorial,
+
+            GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores,
+            GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias
+
         FROM productos p
+
         LEFT JOIN editoriales e
             ON p.id_editorial = e.id
+
+        LEFT JOIN producto_autor pa
+            ON p.id = pa.id_producto
+
+        LEFT JOIN autores a
+            ON pa.id_autor = a.id
+
+        LEFT JOIN producto_categoria pc
+            ON p.id = pc.id_producto
+
+        LEFT JOIN categorias c
+            ON pc.id_categoria = c.id
+
         WHERE p.id = ?
+
+        GROUP BY
+            p.id,
+            p.titulo,
+            p.descripcion,
+            p.isbn,
+            p.precio,
+            p.stock,
+            p.pre_reserva,
+            p.imagen,
+            p.fecha_publicacion,
+            p.id_editorial,
+            e.nombre
     `;
 
+    // Ejecutamos la consulta pasando el id del libro
     const [result] = await pool.query(sql, [id]);
+
 
     return result[0];
 };
@@ -301,6 +361,81 @@ const deleteAutorLibro = async (idLibro, autorId) => {
     return result;
 };
 
+// Buscar todas las categorías relacionadas con un libro/producto
+const selectCategoriasByLibro = async (id) => {
+
+    /**
+     * La tabla producto_categoria guarda la relación
+     * entre productos y categorías.
+     *
+     * Como queremos los datos completos de la categoría,
+     * hacemos un INNER JOIN con la tabla categorias.
+     */
+    const sql = `
+        SELECT
+            c.id,
+            c.nombre,
+            c.descripcion
+        FROM categorias c
+        INNER JOIN producto_categoria pc
+            ON c.id = pc.id_categoria
+        WHERE pc.id_producto = ?
+    `;
+
+    // Ejecutamos la consulta pasando el id del libro
+    const [result] = await pool.query(sql, [id]);
+
+    // Devolvemos todas las categorías encontradas
+    return result;
+};
+
+
+// Insertar una categoría en un libro
+const insertCategoriaLibro = async (idLibro, idCategoria) => {
+
+    /**
+     * Guardamos la relación entre el producto y la categoría.
+     *
+     * id_producto será el libro.
+     * id_categoria será la categoría seleccionada.
+     */
+    const sql = `
+        INSERT INTO producto_categoria
+        (id_producto, id_categoria)
+        VALUES (?, ?)
+    `;
+
+    const [result] = await pool.query(sql, [
+        idLibro,
+        idCategoria
+    ]);
+
+    return result;
+};
+
+
+// Quitar una categoría de un libro
+const deleteCategoriaLibro = async (idLibro, categoriaId) => {
+
+    /**
+     * Eliminamos solo la relación entre libro y categoría.
+     *
+     * No se borra el libro.
+     * No se borra la categoría.
+     */
+    const sql = `
+        DELETE FROM producto_categoria
+        WHERE id_producto = ?
+        AND id_categoria = ?
+    `;
+
+    const [result] = await pool.query(sql, [
+        idLibro,
+        categoriaId
+    ]);
+
+    return result;
+};
 
 module.exports = {
     selectAllLibros,
@@ -308,7 +443,12 @@ module.exports = {
     insertLibro,
     updateLibro,
     deleteLibro,
+
     selectAutoresByLibro,
     insertAutorLibro,
-    deleteAutorLibro
+    deleteAutorLibro,
+
+    selectCategoriasByLibro,
+    insertCategoriaLibro,
+    deleteCategoriaLibro
 };
