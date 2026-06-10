@@ -37,8 +37,8 @@ const addItem = async (req, res) => {
     await carritoModel.addItem(id_carrito, id_producto, cantidad);
     res.status(201).json({ mensaje: 'Producto añadido al carrito' });
   } catch (error) {
-    res.status(500).json({ error: 'Error al añadir el producto' });
-  }
+  res.status(500).json({ error: 'Error al añadir el producto' });
+}
 };
 
 // PUT /api/carrito/:id_producto → FUNCIÓN PARA CAMBIAR LA CANTIDAD 
@@ -54,10 +54,10 @@ const updateCantidad = async (req, res) => {
     const id_carrito = await obtenerOCrearCarrito(req.user.id);
     await carritoModel.updateCantidad(id_carrito, id_producto, cantidad);
     res.json({ mensaje: 'Cantidad actualizada' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar la cantidad' });
-  }
-};
+  }  catch (error) {
+  res.status(500).json({ error: 'Error al actualizar la cantidad' });
+}
+}
 
 // DELETE /api/carrito/:id_producto → quitar un producto
 const removeItem = async (req, res) => {

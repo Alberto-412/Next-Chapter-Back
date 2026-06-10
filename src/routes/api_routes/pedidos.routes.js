@@ -15,8 +15,8 @@ router.post('/orders', auth, pedidosControl.crearPedido);
 router.post('/checkout/payment', auth, pedidosControl.procesarPago);
 
 //ADMIN
-router.get('/admin/orders', [auth, isAdmin], pedidosControl.getTodosPedidos);
-router.get('/admin/orders/:id', [auth, isAdmin], pedidosControl.getPedidoDetalle);
-router.put('/admin/orders/:id', [auth, isAdmin], pedidosControl.cambiarEstado);
+//router.get('/admin/orders', [auth, isAdmin], pedidosControl.getTodosPedidos);
+//router.get('/admin/orders/:id', [auth, isAdmin], pedidosControl.getPedidoDetalle);
+//router.put('/admin/orders/:id', [auth, isAdmin], pedidosControl.cambiarEstado);
 
 module.exports = router;

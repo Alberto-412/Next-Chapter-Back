@@ -65,41 +65,39 @@ const procesarPago = async (req, res) => {
 };
 
 // GET /api/admin/orders → listar todos los pedidos (admin)
-const getTodosPedidos = async (req, res) => {
-  try {
-    const pedidos = await pedidosModel.getAllPedidos();
-    res.json(pedidos);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener los pedidos' });
-  }
-};
+//const getTodosPedidos = async (req, res) => {
+ // try {
+   // const pedidos = await pedidosModel.getAllPedidos();
+   // res.json(pedidos);
+  //} catch (error) {
+   // res.status(500).json({ error: 'Error al obtener los pedidos' });
+ // }
+//};
 
 // PUT /api/admin/orders/:id → cambiar el estado de un pedido (admin)
-const cambiarEstado = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { estado } = req.body;
+//const cambiarEstado = async (req, res) => {
+  //try {
+    //const { id } = req.params;
+    //const { estado } = req.body;
 
-    const estadosValidos = ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado'];
-    if (!estadosValidos.includes(estado)) {
-      return res.status(400).json({ error: 'Estado no válido' });
-    }
+    //const estadosValidos = ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado'];
+    //if (!estadosValidos.includes(estado)) {
+      //return res.status(400).json({ error: 'Estado no válido' });
+   // }
 
-    const filas = await pedidosModel.cambiarEstado(id, estado);
-    if (filas === 0) {
-      return res.status(404).json({ error: 'Pedido no encontrado' });
-    }
-    res.json({ mensaje: 'Estado actualizado', estado });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el estado' });
-  }
-};
+    //const filas = await pedidosModel.cambiarEstado(id, estado);
+    //if (filas === 0) {
+     // return res.status(404).json({ error: 'Pedido no encontrado' });
+    //}
+    //res.json({ mensaje: 'Estado actualizado', estado });
+ // } catch (error) {
+   // res.status(500).json({ error: 'Error al actualizar el estado' });
+ // }
+//};
 
 module.exports = {
   getMisPedidos,
   getPedidoDetalle,
   crearPedido,
   procesarPago,
-  getTodosPedidos,
-  cambiarEstado,
 };

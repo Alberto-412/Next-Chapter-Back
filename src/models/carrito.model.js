@@ -5,7 +5,7 @@ const db = require('../config/conexion')
 //FUNCIÓN PARA BUSCAR EL CARRITO ACTIVO DE UN USUARIO.
 
 const getCarritoActivo = async (id_usuario) => {
-    const[rows] = await db.query(
+    const[row] = await db.query(
         `SELECT id FROM carrito WHERE id_usuario = ? AND estado = 'activo'`,
         [id_usuario]
     );
@@ -76,4 +76,4 @@ const vaciarCarrito = async (id_carrito) => {
   );
 };
 
-module.exports = {getCarritoActivo,crearCarrito,getContenido,addItem,removeItem,vaciarCarrito}
+module.exports = {getCarritoActivo,crearCarrito,getContenido,addItem,removeItem,vaciarCarrito, updateCantidad}
