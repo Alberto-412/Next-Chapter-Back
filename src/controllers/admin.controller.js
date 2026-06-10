@@ -79,56 +79,67 @@ const getProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
     try {
-        const { productId } = req.params
+        const productId = parseInt(req.params.productId, 10);
+        if (isNaN(productId)) {
+            return res.status(400).json({ message: 'ID de producto inválido' });
+        }
+
         const result = await adminModel.getProductById(productId)
         if (!result) return res.status(404).json({ message: 'Producto no encontrado' })
         return res.status(200).json(result)
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al obtener el producto' })
     }
 }
 
 const createProduct = async (req, res) => {
     try {
-        const { titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, id_editorial } = req.body
+        const { titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, editorial, categorias } = req.body
 
         if (!titulo || !precio) {
             return res.status(400).json({ message: 'El título y el precio son obligatorios' })
         }
 
-        const result = await adminModel.createProduct(titulo, descripcion, isbn, precio, stock ?? 0, pre_reserva ?? 0, imagen, fecha_publicacion, id_editorial)
+        const result = await adminModel.createProduct(titulo, descripcion, isbn, precio, stock ?? 0, pre_reserva ?? 0, imagen, fecha_publicacion, editorial, categorias)
         if (!result) return res.status(500).json({ message: 'Error al crear el producto' })
 
-        return res.status(201).json({ msj: "Producto creado correctamente", id: result.insertId })
+        return res.status(201).json({ message: "Producto creado correctamente", id: result.insertId })
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al crear el producto' })
     }
 }
 
 const updateProduct = async (req, res) => {
     try {
-        const { productId } = req.params
-        const { titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, id_editorial } = req.body
+        const productId = parseInt(req.params.productId, 10);
+        if (isNaN(productId)) {
+            return res.status(400).json({ message: 'ID de producto inválido' });
+        }
+
+        const { titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, editorial, categorias } = req.body
 
         if (!titulo || !precio) {
             return res.status(400).json({ message: 'El título y el precio son obligatorios' })
         }
 
-        const result = await adminModel.updateProduct(productId, titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, id_editorial)
+        const result = await adminModel.updateProduct(productId, titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, editorial, categorias)
         if (!result) return res.status(404).json({ message: 'Producto no encontrado' })
 
-        return res.status(200).json({ msj: "Producto actualizado correctamente" })
+        return res.status(200).json({ message: "Producto actualizado correctamente" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al actualizar el producto' })
     }
 }
 
 const deleteProduct = async (req, res) => {
     try {
-        const { productId } = req.params
+        const productId = parseInt(req.params.productId, 10);
+        if (isNaN(productId)) {
+            return res.status(400).json({ message: 'ID de producto inválido' });
+        }
 
         const pedidos = await adminModel.checkProductInPedidos(productId)
         if (pedidos.length > 0) {
@@ -138,10 +149,10 @@ const deleteProduct = async (req, res) => {
         const result = await adminModel.deleteProduct(productId)
         if (!result) return res.status(404).json({ message: 'Producto no encontrado' })
 
-        return res.status(200).json({ msj: "Producto eliminado correctamente" })
+        return res.status(200).json({ message: "Producto eliminado correctamente" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al eliminar el producto' })
     }
 }
 
@@ -158,19 +169,27 @@ const getOrders = async (req, res) => {
 
 const getOrderById = async (req, res) => {
     try {
-        const { orderId } = req.params
+        const orderId = parseInt(req.params.orderId, 10);
+        if (isNaN(orderId)) {
+            return res.status(400).json({ message: 'ID de pedido inválido' });
+        }
+
         const result = await adminModel.getOrderById(orderId)
         if (!result) return res.status(404).json({ message: 'Pedido no encontrado' })
         return res.status(200).json(result)
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al obtener el pedido' })
     }
 }
 
 const updateOrderStatus = async (req, res) => {
     try {
-        const { orderId } = req.params
+        const orderId = parseInt(req.params.orderId, 10);
+        if (isNaN(orderId)) {
+            return res.status(400).json({ message: 'ID de pedido inválido' });
+        }
+
         const { estado } = req.body
 
         const estadosValidos = ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado']
@@ -180,10 +199,10 @@ const updateOrderStatus = async (req, res) => {
 
         const result = await adminModel.updateOrderStatus(orderId, estado)
         if (!result) return res.status(404).json({ message: 'Pedido no encontrado' })
-        return res.status(200).json({ msj: "Estado del pedido actualizado correctamente" })
+        return res.status(200).json({ message: "Estado del pedido actualizado correctamente" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al actualizar el pedido' })
     }
 }
 
@@ -201,36 +220,46 @@ const getUsers = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { userId } = req.params
+        const id = parseInt(userId, 10)
         const { nombre, mail, telefono, direccion, rol, activo } = req.body
+
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'ID de usuario inválido' })
+        }
 
         if (rol && rol !== 'admin' && rol !== 'cliente') {
             return res.status(400).json({ message: 'Rol no válido' })
         }
 
-        const result = await adminModel.updateUser(userId, nombre, mail, telefono, direccion, rol, activo)
+        const result = await adminModel.updateUser(id, nombre, mail, telefono, direccion, rol, activo)
         if (!result) return res.status(404).json({ message: 'Usuario no encontrado' })
-        return res.status(200).json({ msj: "Usuario actualizado correctamente" })
+        return res.status(200).json({ message: "Usuario actualizado correctamente" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al actualizar el usuario' })
     }
 }
 
 const deleteUser = async (req, res) => {
     try {
         const { userId } = req.params
+        const id = parseInt(userId, 10)
 
-        const pedidosActivos = await adminModel.checkUserActivePedidos(userId)
-        if (pedidosActivos.length > 0) {
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'ID de usuario inválido' })
+        }
+
+        const pedidosActivos = await adminModel.checkUserActivePedidos(id)
+        if (pedidosActivos && pedidosActivos.length > 0) {
             return res.status(400).json({ message: 'No se puede dar de baja a un usuario con pedidos en curso' })
         }
 
-        const result = await adminModel.deleteUser(userId)
+        const result = await adminModel.deleteUser(id)
         if (!result) return res.status(404).json({ message: 'Usuario no encontrado' })
-        return res.status(200).json({ msj: "Usuario dado de baja correctamente" })
+        return res.status(200).json({ message: "Usuario dado de baja correctamente" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json(error)
+        return res.status(500).json({ message: 'Error al dar de baja al usuario' })
     }
 }
 
@@ -244,4 +273,24 @@ const getDashboard = async (req, res) => {
     }
 }
 
-module.exports = { validarUsuario, getUsuariosPendientes, updateRol, getUsuarioById, getProducts, getProductById, createProduct, updateProduct, deleteProduct, getOrders, getOrderById, updateOrderStatus, getUsers, updateUser, deleteUser, getDashboard }
+const getEditoriales = async (req, res) => {
+    try {
+        const result = await adminModel.getEditoriales()
+        return res.status(200).json(result)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error al obtener editoriales' })
+    }
+}
+
+const getCategorias = async (req, res) => {
+    try {
+        const result = await adminModel.getCategorias()
+        return res.status(200).json(result)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error al obtener categorías' })
+    }
+}
+
+module.exports = { validarUsuario, getUsuariosPendientes, updateRol, getUsuarioById, getProducts, getProductById, createProduct, updateProduct, deleteProduct, getOrders, getOrderById, updateOrderStatus, getUsers, updateUser, deleteUser, getDashboard, getEditoriales, getCategorias }
