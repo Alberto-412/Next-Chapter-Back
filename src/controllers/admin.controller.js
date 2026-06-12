@@ -124,8 +124,33 @@ const updateProduct = async (req, res) => {
             return res.status(400).json({ message: 'El título y el precio son obligatorios' })
         }
 
-        const result = await adminModel.updateProduct(productId, titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fecha_publicacion, editorial, categorias)
+        // Convertir fecha ISO a formato YYYY-MM-DD que MySQL entiende
+        let fechaFormato = fecha_publicacion
+        if (fecha_publicacion) {
+            const fecha = new Date(fecha_publicacion)
+            fechaFormato = fecha.toISOString().split('T')[0]
+        }
+
+        // Buscar el ID de la editorial por NOMBRE
+        let idEditorial = null
+        if (editorial && editorial.trim() !== '') {
+            idEditorial = await adminModel.getEditorialIdByNombre(editorial)
+        }
+
+        const result = await adminModel.updateProduct(productId, titulo, descripcion, isbn, precio, stock, pre_reserva, imagen, fechaFormato, idEditorial)
         if (!result) return res.status(404).json({ message: 'Producto no encontrado' })
+
+        // Buscar IDs de categorías por NOMBRES y actualizar
+        if (categorias && categorias.trim() !== '') {
+            const categoriasArray = categorias.split(',').map(c => c.trim()).filter(c => c !== '')
+
+            if (categoriasArray.length > 0) {
+                const categoriasIds = await adminModel.getCategoriaIdsByNombres(categoriasArray)
+                if (categoriasIds.length > 0) {
+                    await adminModel.updateProductCategories(productId, categoriasIds)
+                }
+            }
+        }
 
         return res.status(200).json({ message: "Producto actualizado correctamente" })
     } catch (error) {

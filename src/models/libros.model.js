@@ -26,7 +26,7 @@ const selectAllLibros = async (filtros) => {
         GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores,
 
         ROUND(AVG(r.calificacion), 1) AS rating,
-        COUNT(DISTINCT r.id) AS total_resenas
+        COUNT(DISTINCT r.id) AS total_reviews
 
     FROM productos p
     LEFT JOIN editoriales e ON p.id_editorial = e.id
@@ -34,7 +34,7 @@ const selectAllLibros = async (filtros) => {
     LEFT JOIN categorias c ON pc.id_categoria = c.id
     LEFT JOIN producto_autor pa ON p.id = pa.id_producto
     LEFT JOIN autores a ON pa.id_autor = a.id
-    LEFT JOIN resenas r ON p.id = r.id_producto
+    LEFT JOIN reviews r ON p.id = r.id_producto
     WHERE 1 = 1
     `;
 
@@ -94,7 +94,8 @@ const selectAllLibros = async (filtros) => {
             p.pre_reserva,
             p.imagen,
             p.fecha_publicacion,
-            e.nombre
+            e.nombre,
+            r.id
     `;
 
     // Ejecuta la consulta SQL
