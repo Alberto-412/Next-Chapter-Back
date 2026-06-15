@@ -1,3 +1,10 @@
+// ============================================================
+// QUÉ HACE: Router raíz del backend. Importa todos los routers
+//           de módulo y los monta bajo la ruta /api (definida
+//           en server.js con app.use('/api', apiRoutes)).
+//           Es el "índice" de todas las rutas de la aplicación.
+// ============================================================
+
 const router = require("express").Router()
 
 // Aquí iremos importando las rutas de cada módulo, y montándolas desde la raíz.
