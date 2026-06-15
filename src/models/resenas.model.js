@@ -17,7 +17,7 @@ const selectResenasByLibro = async (idProducto) => {
       r.id_producto,
       u.nombre AS usuario_nombre,
       u.mail AS usuario_mail
-    FROM resenas r
+    FROM reviews r
     LEFT JOIN usuarios u
       ON r.id_usuario = u.id
     WHERE r.id_producto = ?
