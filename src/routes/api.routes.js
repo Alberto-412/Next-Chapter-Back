@@ -19,4 +19,8 @@ router.use("/", require('./api_routes/admin.routes'));
 
 router.use("/", require("./api_routes/resenas.routes"));
 
+router.use("/", require("./api_routes/newsletter.routes"));
+
+router.use('/', require('./api_routes/contacto.routes'));
+
 module.exports = router;

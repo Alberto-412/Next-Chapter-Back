@@ -6,8 +6,19 @@ const selectAllLibros = async (filtros) => {
     // Recibe los filtros enviados desde el controller mediante req.query
     // Si el usuario busca "harry", la consulta devolverá todos los libros
     // que contengan "harry" en el título, descripción, categoría, autor o editorial.
+    //
+    // Además añadimos paginación para que no cargue todos los libros de golpe.
+    // Por defecto mostrará 12 libros por página.
+    const { busqueda, categoria, precioMin, precioMax, pagina = 1, limite = 12 } = filtros;
 
-    const { busqueda, categoria, precioMin, precioMax } = filtros;
+    // Convertimos los valores a número porque
+    // los query params llegan como texto.
+    const paginaNumero = Number(pagina);
+    const limiteNumero = Number(limite);
+
+    // OFFSET indica desde qué registro debe
+    // empezar MySQL a devolver resultados.
+    const offset = (paginaNumero - 1) * limiteNumero;
 
     // Aquí monto la consulta para traer todos los datos de los libros porque luego los necesito - Cry  (T_T)
     let sql = `
@@ -38,12 +49,29 @@ const selectAllLibros = async (filtros) => {
     WHERE 1 = 1
     `;
 
-    // Array para meter los valores que sustituyen los ? de la consulta
+    // Esta consulta es parecida, pero no trae libros.
+    // Solo cuenta cuántos libros hay en total con los filtros aplicados.
+    // Esto lo necesitamos para saber cuántas páginas hay.
+    let sqlTotal = `
+        SELECT COUNT(DISTINCT p.id) AS total
+        FROM productos p
+        LEFT JOIN editoriales e ON p.id_editorial = e.id
+        LEFT JOIN producto_categoria pc ON p.id = pc.id_producto
+        LEFT JOIN categorias c ON pc.id_categoria = c.id
+        LEFT JOIN producto_autor pa ON p.id = pa.id_producto
+        LEFT JOIN autores a ON pa.id_autor = a.id
+        WHERE 1 = 1
+    `;
+
+    // Array para meter los valores que sustituyen los ? de la consulta principal.
     const params = [];
+
+    // Array para meter los valores que sustituyen los ? de la consulta total.
+    const paramsTotal = [];
 
     // Filtro de búsqueda por título, descripción, categoría, autor o editorial
     if (busqueda) {
-        sql += `
+        const filtroBusqueda = `
             AND (
                 p.titulo LIKE ?
                 OR p.descripcion LIKE ?
@@ -52,37 +80,55 @@ const selectAllLibros = async (filtros) => {
                 OR e.nombre LIKE ?
             )
         `;
+
+        // Añadimos el mismo filtro a las dos consultas.
+        sql += filtroBusqueda;
+        sqlTotal += filtroBusqueda;
+
         // Añade el texto de búsqueda a cada uno de los ? del LIKE.
-        // Los símbolos % permiten buscar coincidencias parciales en título,
-        // descripción, categoría, autor y editorial.
-        params.push(
+        const valoresBusqueda = [
             `%${busqueda}%`,
             `%${busqueda}%`,
             `%${busqueda}%`,
             `%${busqueda}%`,
             `%${busqueda}%`
-        );
+        ];
+
+        params.push(...valoresBusqueda);
+        paramsTotal.push(...valoresBusqueda);
     }
 
     // Filtro por categoría
     if (categoria) {
         sql += ` AND c.id = ?`;
+        sqlTotal += ` AND c.id = ?`;
+
         params.push(categoria);
+        paramsTotal.push(categoria);
     }
 
     // Filtro por precio mínimo
     if (precioMin) {
         sql += ` AND p.precio >= ?`;
+        sqlTotal += ` AND p.precio >= ?`;
+
         params.push(precioMin);
+        paramsTotal.push(precioMin);
     }
 
     // Filtro por precio máximo
     if (precioMax) {
         sql += ` AND p.precio <= ?`;
+        sqlTotal += ` AND p.precio <= ?`;
+
         params.push(precioMax);
+        paramsTotal.push(precioMax);
     }
 
-    // Agrupa aqui para que cada libro salga una sola vez
+    // Agrupa aqui para que cada libro salga una sola vez.
+    // ORDER BY ordena los libros empezando por los últimos añadidos.
+    // LIMIT dice cuántos libros queremos mostrar.
+    // OFFSET dice desde qué libro empezamos.
     sql += `
         GROUP BY 
             p.id,
@@ -94,15 +140,35 @@ const selectAllLibros = async (filtros) => {
             p.pre_reserva,
             p.imagen,
             p.fecha_publicacion,
-            e.nombre,
-            r.id
+            e.nombre
+        ORDER BY p.id DESC
+        LIMIT ? OFFSET ?
     `;
 
-    // Ejecuta la consulta SQL
-    const [result] = await pool.query(sql, params);
+    // Añadimos al final los valores de paginación.
+    params.push(limiteNumero, offset);
 
-    // Retorna los libros al controller
-    return result;
+    // Ejecuta la consulta SQL de libros
+    const [libros] = await pool.query(sql, params);
+
+    // Ejecuta la consulta SQL que cuenta el total
+    const [totalResult] = await pool.query(sqlTotal, paramsTotal);
+
+    // Sacamos el total de libros encontrados
+    const total = totalResult[0].total;
+
+    // Calculamos cuántas páginas hay en total.
+    // Math.ceil redondea hacia arriba.
+    const totalPaginas = Math.ceil(total / limiteNumero);
+
+    // Retorna los libros al controller junto con la información de paginación.
+    return {
+        libros,
+        total,
+        pagina: paginaNumero,
+        limite: limiteNumero,
+        totalPaginas
+    };
 };
 
 
