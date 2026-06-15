@@ -7,11 +7,17 @@ const LibrosModel = require("../models/libros.model");
 // req.query contendrá esos valores y se envían al modelo.
 const getAll = async (req, res) => {
     try {
-        const libros = await LibrosModel.selectAllLibros(req.query);
+        const resultado = await LibrosModel.selectAllLibros(req.query);
 
         res.json({
             mensaje: "Libros encontrados",
-            data: libros
+            data: resultado.libros,
+            paginacion: {
+                total: resultado.total,
+                pagina: resultado.pagina,
+                limite: resultado.limite,
+                totalPaginas: resultado.totalPaginas
+            }
         });
 
     } catch (error) {
