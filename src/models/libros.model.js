@@ -45,7 +45,7 @@ const selectAllLibros = async (filtros) => {
     LEFT JOIN categorias c ON pc.id_categoria = c.id
     LEFT JOIN producto_autor pa ON p.id = pa.id_producto
     LEFT JOIN autores a ON pa.id_autor = a.id
-    LEFT JOIN reviews r ON p.id = r.id_producto
+    LEFT JOIN resenas r ON p.id = r.id_producto
     WHERE 1 = 1
     `;
 

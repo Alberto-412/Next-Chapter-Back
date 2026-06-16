@@ -37,8 +37,9 @@ const addItem = async (req, res) => {
     await carritoModel.addItem(id_carrito, id_producto, cantidad);
     res.status(201).json({ mensaje: 'Producto añadido al carrito' });
   } catch (error) {
-  res.status(500).json({ error: 'Error al añadir el producto' });
-}
+    res.status(500).json({ error: 'Error al añadir el producto' });
+    console.error(error)
+  }
 };
 
 // PUT /api/carrito/:id_producto → FUNCIÓN PARA CAMBIAR LA CANTIDAD 
@@ -83,3 +84,4 @@ const vaciarCarrito = async (req, res) => {
 };
 
 module.exports = {obtenerOCrearCarrito,getCarrito,addItem,updateCantidad,removeItem,vaciarCarrito};
+
