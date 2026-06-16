@@ -11,8 +11,16 @@ router.use('/', pedidosRoutes);
 
 router.use("/", require("./api_routes/libros.routes"))
 router.use("/", require("./api_routes/categorias.routes"))
+router.use("/", require("./api_routes/autores.routes"))
+router.use("/", require("./api_routes/editorial.routes"))
 
 router.use("/", require('./api_routes/usuarios.routes'));
 router.use("/", require('./api_routes/admin.routes'));
+
+router.use("/", require("./api_routes/resenas.routes"));
+
+router.use("/", require("./api_routes/newsletter.routes"));
+
+router.use('/', require('./api_routes/contacto.routes'));
 
 module.exports = router;

@@ -7,11 +7,17 @@ const LibrosModel = require("../models/libros.model");
 // req.query contendrá esos valores y se envían al modelo.
 const getAll = async (req, res) => {
     try {
-        const libros = await LibrosModel.selectAllLibros(req.query);
+        const resultado = await LibrosModel.selectAllLibros(req.query);
 
         res.json({
             mensaje: "Libros encontrados",
-            data: libros
+            data: resultado.libros,
+            paginacion: {
+                total: resultado.total,
+                pagina: resultado.pagina,
+                limite: resultado.limite,
+                totalPaginas: resultado.totalPaginas
+            }
         });
 
     } catch (error) {
@@ -132,10 +138,206 @@ const deleteById = async (req, res) => {
     }
 };
 
+
+// Obtener los autores de un libro
+const getAutoresByLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Buscar los autores de ese libro
+        const autores = await LibrosModel.selectAutoresByLibro(id);
+
+
+        res.json({
+            mensaje: "Autores encontrados",
+            data: autores
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+
+        res.status(500).json({
+            mensaje: "Error al obtener los autores del libro"
+        });
+    }
+};
+
+
+// Añadir un autor a un libro
+const addAutorToLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Obtener el id del autor desde el body
+        const { id_autor } = req.body;
+
+        // Crear la relación libro-autor
+        const result = await LibrosModel.insertAutorLibro(
+            id,
+            id_autor
+        );
+
+
+        res.status(201).json({
+            mensaje: "Autor añadido al libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+
+        res.status(500).json({
+            mensaje: "Error al añadir el autor al libro"
+        });
+    }
+};
+
+
+// Quitar un autor de un libro
+const removeAutorFromLibro = async (req, res) => {
+
+    try {
+
+        // El id es del libro
+        const { id } = req.params;
+
+        // autorId es el autor que quiero quitar
+        const { autorId } = req.params;
+
+        // Borrar la relación libro-autor
+        const result = await LibrosModel.deleteAutorLibro(id, autorId);
+
+        res.json({
+            mensaje: "Autor quitado del libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+
+        res.status(500).json({
+            mensaje: "Error al quitar el autor del libro"
+        });
+    }
+};
+
+
+// Obtener las categorías de un libro
+const getCategoriasByLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Buscar las categorías relacionadas con ese libro
+        const categorias = await LibrosModel.selectCategoriasByLibro(id);
+
+        res.json({
+            mensaje: "Categorías encontradas",
+            data: categorias
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al obtener las categorías del libro"
+        });
+    }
+};
+
+
+// Añadir una categoría a un libro
+const addCategoriaToLibro = async (req, res) => {
+
+    try {
+
+        // Obtener el id del libro desde la URL
+        const { id } = req.params;
+
+        // Obtener el id de la categoría desde el body
+        const { id_categoria } = req.body;
+
+        // Crear la relación libro-categoría
+        const result = await LibrosModel.insertCategoriaLibro(
+            id,
+            id_categoria
+        );
+
+        res.status(201).json({
+            mensaje: "Categoría añadida al libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al añadir la categoría al libro"
+        });
+    }
+};
+
+
+// Quitar una categoría de un libro
+const removeCategoriaFromLibro = async (req, res) => {
+
+    try {
+
+        // El id es del libro
+        const { id } = req.params;
+
+        // categoriaId es la categoría que queremos quitar
+        const { categoriaId } = req.params;
+
+        // Borrar la relación libro-categoría
+        const result = await LibrosModel.deleteCategoriaLibro(
+            id,
+            categoriaId
+        );
+
+        res.json({
+            mensaje: "Categoría quitada del libro correctamente",
+            data: result
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            mensaje: "Error al quitar la categoría del libro"
+        });
+    }
+};
+
 module.exports = {
     getAll,
     getById,
     createLibro,
     updateById,
-    deleteById
+    deleteById,
+
+    getAutoresByLibro,
+    addAutorToLibro,
+    removeAutorFromLibro,
+
+    getCategoriasByLibro,
+    addCategoriaToLibro,
+    removeCategoriaFromLibro
 };

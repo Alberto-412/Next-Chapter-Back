@@ -20,3 +20,4 @@ router.post('/checkout/payment', auth, pedidosControl.procesarPago);
 //router.put('/admin/orders/:id', [auth, isAdmin], pedidosControl.cambiarEstado);
 
 module.exports = router;
+
