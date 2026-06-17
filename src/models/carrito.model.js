@@ -9,7 +9,7 @@ const getCarritoActivo = async (id_usuario) => {
         `SELECT id FROM carrito WHERE id_usuario = ? AND estado = 'activo'`,
         [id_usuario]
     );
-    return row[0]; //esto nos devolverá el carrito o undefined si no tiene 
+    return rows[0]; //esto nos devolverá el carrito o undefined si no tiene 
 }
 
 //FUNCIÓN PARA CREAR UN CARRITO NUEVO PARA UN USUARIO.
@@ -76,4 +76,4 @@ const vaciarCarrito = async (id_carrito) => {
   );
 };
 
-module.exports = {getCarritoActivo,crearCarrito,getContenido,addItem,removeItem,vaciarCarrito}
+module.exports = {getCarritoActivo,crearCarrito,getContenido,addItem,removeItem,vaciarCarrito, updateCantidad}

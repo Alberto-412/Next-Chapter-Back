@@ -60,12 +60,25 @@ const deleteUser = async (id) => {
     return result
 }
 
+
 const getWishlist = async (usuario_id) => {
-    const select = "SELECT * FROM favoritos WHERE usuario_id = ?"
-    const [result] = await pool.query(select, [usuario_id])
-    if (result.length === 0) return false
-    return result
-}
+    // JOIN con productos para traer también titulo, precio e imagen,
+    // porque la tabla favoritos solo guarda los IDs y wishlist.html pinta esos campos.
+    const select = `
+        SELECT
+            f.libro_id,
+            p.titulo,
+            p.precio,
+            p.imagen
+        FROM favoritos f
+        JOIN productos p ON f.libro_id = p.id
+        WHERE f.usuario_id = ?
+    `;
+    const [result] = await pool.query(select, [usuario_id]);
+    // Devolvemos el array tal cual. Si está vacío es [] (no un error):
+    // así el controller responde 200 [] y el front muestra "No tienes libros…"
+    return result;
+};
 
 const addToWishlist = async (usuario_id, libro_id) => {
     const insert = "INSERT INTO favoritos (usuario_id, libro_id) VALUES (?, ?)"
@@ -82,7 +95,7 @@ const removeFromWishlist = async (usuario_id, libro_id) => {
 }
 
 const getReviews = async (usuario_id) => {
-    const select = "SELECT * FROM reviews WHERE id_usuario = ?"
+    const select = "SELECT * FROM resenas WHERE id_usuario = ?"
     const [result] = await pool.query(select, [usuario_id])
     if (result.length === 0) return false
     return result
