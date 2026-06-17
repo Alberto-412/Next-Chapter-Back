@@ -90,7 +90,7 @@ id_usuario    int unsigned not null,
 
 -- ------------------------------------------------------------
 
-CREATE TABLE reviews (
+CREATE TABLE resenas (
     id              int unsigned not null auto_increment primary key,
     calificacion    tinyint unsigned not null check (calificacion between 1 and 5), -- Valoración obligatoria del 1 al 5, validada por la BD
     comentario      text,

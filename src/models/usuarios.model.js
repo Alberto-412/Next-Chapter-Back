@@ -82,28 +82,28 @@ const removeFromWishlist = async (usuario_id, libro_id) => {
 }
 
 const getReviews = async (usuario_id) => {
-    const select = "SELECT * FROM reviews WHERE id_usuario = ?"
+    const select = "SELECT * FROM resenas WHERE id_usuario = ?"
     const [result] = await pool.query(select, [usuario_id])
     if (result.length === 0) return false
     return result
 }
 
 const addReview = async (usuario_id, producto_id, calificacion, comentario) => {
-    const insert = "INSERT INTO reviews (id_usuario, id_producto, calificacion, comentario) VALUES (?, ?, ?, ?)"
+    const insert = "INSERT INTO resenas (id_usuario, id_producto, calificacion, comentario) VALUES (?, ?, ?, ?)"
     const [result] = await pool.query(insert, [usuario_id, producto_id, calificacion, comentario])
     if (result.affectedRows === 0) return false
     return result
 }
 
 const updateReview = async (id_review, usuario_id, calificacion, comentario) => {
-    const update = "UPDATE reviews SET calificacion = ?, comentario = ? WHERE id = ? AND id_usuario = ?"
+    const update = "UPDATE resenas SET calificacion = ?, comentario = ? WHERE id = ? AND id_usuario = ?"
     const [result] = await pool.query(update, [calificacion, comentario, id_review, usuario_id])
     if (result.affectedRows === 0) return false
     return result
 }
 
 const deleteReview = async (id_review, usuario_id) => {
-    const query = "DELETE FROM reviews WHERE id = ? AND id_usuario = ?"
+    const query = "DELETE FROM resenas WHERE id = ? AND id_usuario = ?"
     const [result] = await pool.query(query, [id_review, usuario_id])
     if (result.affectedRows === 0) return false
     return result
