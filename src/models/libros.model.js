@@ -34,10 +34,8 @@ const selectAllLibros = async (filtros) => {
         p.fecha_publicacion,
         e.nombre AS editorial,
         GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias,
-        GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores,
+        GROUP_CONCAT(DISTINCT a.nombre_autor SEPARATOR ', ') AS autores
 
-        ROUND(AVG(r.calificacion), 1) AS rating,
-        COUNT(DISTINCT r.id) AS total_reviews
 
     FROM productos p
     LEFT JOIN editoriales e ON p.id_editorial = e.id
